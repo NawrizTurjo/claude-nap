@@ -25,6 +25,10 @@ same task automatically after the reset, with no manual check-ins.
 - Never reads your OAuth token, never calls undocumented web endpoints, and never switches you to API
   billing. Usage it can't verify is reported as `UNKNOWN`, never guessed.
 
+```powershell
+irm https://raw.githubusercontent.com/NawrizTurjo/claude-nap/main/setup.ps1 | iex
+```
+
 > Windows + PowerShell 7 only, for now. Not affiliated with Anthropic.
 
 ---
@@ -107,21 +111,42 @@ so only one of them probes at a time.
 
 ## Install
 
+One line, in PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/NawrizTurjo/claude-nap/main/setup.ps1 | iex
+```
+
+This downloads the latest release to `%LOCALAPPDATA%\claude-nap` and installs it in
+**dry-run** mode, which warns but never blocks. Run the same line again to update; your
+`config.local.json` and `state\` are kept.
+
+Then try a real pause/resume (about 2 minutes) and turn on blocking:
+
+```powershell
+pwsh -File "$env:LOCALAPPDATA\claude-nap\Start-NapTest.ps1"
+pwsh -File "$env:LOCALAPPDATA\claude-nap\Install.ps1" -Enforce
+```
+
+Or install with blocking already on:
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/NawrizTurjo/claude-nap/main/setup.ps1))) -Enforce
+```
+
+<details>
+<summary>Manual install (git clone)</summary>
+
 ```powershell
 git clone https://github.com/NawrizTurjo/claude-nap.git
 cd claude-nap
-
-# 1. Confirm the usage reading matches claude.ai/settings/usage
-pwsh -File .\Check-ClaudeUsage.ps1
-
-# 2. Run the simulated tests (no Claude calls)
-pwsh -File .\tests\Test-UsageCheck.ps1
+pwsh -File .\Check-ClaudeUsage.ps1        # confirm the reading matches claude.ai/settings/usage
+pwsh -File .\tests\Test-UsageCheck.ps1    # simulated tests (no Claude calls)
 pwsh -File .\tests\Test-Manager.ps1
-
-# 3. Install the gate hook + skill in dry-run mode (warns only, never blocks)
-pwsh -File .\Install.ps1
+pwsh -File .\Install.ps1                  # dry-run
+pwsh -File .\Install.ps1 -Enforce         # writes "DryRun": false to config.local.json
 ```
-
+</details>
 `Install.ps1` backs up `~/.claude/settings.json`, then adds one `PreToolUse` hook. It also
 links this folder as the skill `~/.claude/skills/claude-nap`. Restart open
 Claude Code sessions afterwards.
@@ -223,7 +248,7 @@ git-ignored and takes precedence, for example `{ "StopThresholdPercent": 95 }`.
 ## Uninstall
 
 ```powershell
-pwsh -File .\Uninstall.ps1                     # removes the hook (with backup) and the skill link
+pwsh -File "$env:LOCALAPPDATA\claude-nap\Uninstall.ps1"   # removes the hook (with backup) and the skill link
 Remove-Item <path-to>\claude-nap -Recurse -Force   # optional: delete the files
 ```
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 - 2026-10-20
+
+- One-line install/update: `irm https://raw.githubusercontent.com/NawrizTurjo/claude-nap/main/setup.ps1 | iex`.
+  Works from Windows PowerShell 5.1 or 7 and keeps `config.local.json` and `state\` on update.
+
 ## 0.2.0 - 2026-10-20
 
 - `Start-NapTest.ps1`: run a real pause/resume cycle in about 2 minutes (temporary threshold =
