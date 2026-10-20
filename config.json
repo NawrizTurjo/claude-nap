@@ -1,0 +1,27 @@
+{
+  "Enabled": true,
+  "DryRun": true,
+  "StopThresholdPercent": 98,
+  "PredictiveStop": true,
+  "HeavyToolsBlockPercent": 90,
+  "HeavyTools": ["Agent", "Task", "Workflow"],
+  "MinPollSeconds": 5,
+  "MaxPollSeconds": 300,
+  "PollBands": [
+    { "BelowPercent": 50,  "Seconds": 300 },
+    { "BelowPercent": 75,  "Seconds": 120 },
+    { "BelowPercent": 85,  "Seconds": 60 },
+    { "BelowPercent": 92,  "Seconds": 20 },
+    { "BelowPercent": 101, "Seconds": 8 }
+  ],
+  "UnknownBlockMarginPercent": 5,
+  "MaxDataAgeSeconds": 180,
+  "ProbeModel": "haiku",
+  "ProbeTimeoutSeconds": 45,
+  "ClaudePath": "",
+  "ResetGraceSeconds": 30,
+  "RetrySeconds": [60, 120, 300],
+  "PreNotifyMinutes": 5,
+  "MaxWaitHours": 8,
+  "Notifications": true
+}
