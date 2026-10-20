@@ -105,6 +105,18 @@ Check 'gate: UNKNOWN + last good 50% -> allow' ((DecisionOf (Hook)) -eq 'allow')
 Reset-Env; Add-Probe 0.10 $soon; New-Item "$tmp\state\STOP" | Out-Null
 Check 'gate: STOP file -> deny even at 10%'   ((DecisionOf (Hook)) -eq 'deny')
 
+# Nap test override: enforces in dry-run, lowers threshold, fakes a near reset; expires.
+Reset-Env @{ DryRun = $true }; Add-Probe 0.55 $soon
+@{ ThresholdPercent = 55; FakeResetSeconds = 60; ExpiresAt = [datetimeoffset]::Now.AddMinutes(5).ToString('o') } | ConvertTo-Json | Set-Content "$tmp\state\nap-test.json"
+$d = Hook; $p = Read-CumPause
+$fake = $p -and ([long]$p.ResetsAtUnix - [datetimeoffset]::Now.ToUnixTimeSeconds()) -in 55..61
+Check 'nap test: 55% vs test threshold 55 -> deny despite dry-run' ((DecisionOf $d) -eq 'deny' -and $d.hookSpecificOutput.permissionDecisionReason -match 'NAP TEST') (DecisionOf $d)
+Check 'nap test: pause uses fake reset (+60s)' $fake
+Check 'nap test: Start-NapTest -Cancel allowed while paused' ((DecisionOf (Hook 'PowerShell' @{ command = 'pwsh -File .\Start-NapTest.ps1 -Cancel' })) -eq 'allow')
+Reset-Env @{ DryRun = $true }; Add-Probe 0.55 $soon
+@{ ThresholdPercent = 55; FakeResetSeconds = 60; ExpiresAt = [datetimeoffset]::Now.AddMinutes(-1).ToString('o') } | ConvertTo-Json | Set-Content "$tmp\state\nap-test.json"
+Check 'nap test: expired override ignored'    ((DecisionOf (Hook)) -eq 'allow')
+
 # End-to-end through the real hook script (stdin JSON -> stdout JSON).
 Reset-Env; Add-Probe 0.99 $soon
 $out = '{"session_id":"e2e","tool_name":"Bash","tool_input":{"command":"ls"}}' | pwsh -NoProfile -File "$root\hooks\UsageGate.ps1"

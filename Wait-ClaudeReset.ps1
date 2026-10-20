@@ -67,6 +67,7 @@ try {
             $u = Get-ClaudeUsage -Config $config
             if ($u.Status -eq 'OK' -and $u.Action -eq 'CONTINUE') {
                 Clear-CumPause
+                Clear-CumNapTest
                 Say "RESUME: reset confirmed by a fresh probe: $($u.UsedPercent)% used, next reset $($u.ResetsAtLocal.ToString('yyyy-MM-dd HH:mm:ss zzz')). Continue the previously authorized task from checkpoint: $Checkpoint . Verify completed items before skipping them; do not redo finished work or add new scope."
                 Send-CumNotification 'Claude work resuming' "Usage $($u.UsedPercent)% after reset. Resuming from checkpoint." $config
                 exit 0

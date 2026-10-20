@@ -8,6 +8,8 @@ picks up exactly where it left off.
 ![Claude Code](https://img.shields.io/badge/Claude%20Code-2.1.234%2B-D97757)
 ![license](https://img.shields.io/badge/license-MIT-green)
 
+![claude-nap demo: gate pauses Claude, timer confirms the reset, session resumes](docs/demo.gif)
+
 Pause Claude Code before it runs into the claude.ai **5-hour usage limit**, then resume the
 same task automatically after the reset, with no manual check-ins.
 
@@ -17,8 +19,9 @@ same task automatically after the reset, with no manual check-ins.
   when the burn rate predicts a crossing, and blocks new subagent fan-out from 90%.
 - After the reset, a background waiter **confirms the reset with fresh data** before it wakes
   the session. A timer alone is never trusted.
-- Built on hooks and background commands, which both the **CLI** and the **VS Code
-  extension** support. Probe verified on a **Team** plan; it should work on Pro and Max too.
+- Built on hooks and background commands. The full pause → wait → resume cycle has been run for real
+  in the **VS Code extension** on a **Team** plan (see the GIF). The CLI uses the same hooks and
+  background commands. It should work on Pro and Max too.
 - Never reads your OAuth token, never calls undocumented web endpoints, and never switches you to API
   billing. Usage it can't verify is reported as `UNKNOWN`, never guessed.
 
@@ -129,6 +132,21 @@ When the dry-run warnings look right, turn on enforcement:
 pwsh -File .\Install.ps1 -Enforce     # sets "DryRun": false in config.json
 ```
 
+## Try it in 2 minutes
+
+Watch a real pause and resume without waiting hours for a real reset:
+
+```powershell
+pwsh -File .\Start-NapTest.ps1       # stop threshold = your current usage, fake reset in 60 s
+```
+
+Then ask Claude for any small task. The next tool call is denied; Claude writes a
+checkpoint, starts the waiter in the background and stops. About 90 s later the waiter
+confirms (with a real probe) that usage is below your normal threshold, prints `RESUME`,
+and the session wakes up and continues. Test mode turns itself off on resume, or after
+15 minutes. Use `-Cancel` to stop it early. While it's armed, every Claude Code session on
+the machine is gated.
+
 ## Use
 
 There's nothing to run day to day. Work normally. When the threshold is reached:
@@ -226,7 +244,7 @@ Remove-Item <path-to>\claude-nap -Recurse -Force   # optional: delete the files
 
 ```powershell
 pwsh -File .\tests\Test-UsageCheck.ps1   # parser/validator: 97%, 98%, missing, stale, delayed reset, ...
-pwsh -File .\tests\Test-Manager.ps1      # gate, dynamic polling, burst, waiter (about 25 s, real time)
+pwsh -File .\tests\Test-Manager.ps1      # gate, polling, burst, nap test, waiter (about 25 s, real time)
 ```
 
 The tests use fixture probes (`CUM_FIXTURE_DIR`), an isolated state directory

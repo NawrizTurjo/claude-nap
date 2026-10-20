@@ -323,13 +323,26 @@ function Read-CumPause {
     try { Get-Content $path -Raw | ConvertFrom-Json } catch { $null }
 }
 
-function Set-CumPause($Usage, [string]$Reason) {
+function Set-CumPause($Usage, [string]$Reason, [long]$ResetsAtUnix = $Usage.ResetsAtUnix) {
     Write-CumJsonAtomic (Get-CumPath 'pause.json') ([ordered]@{
         Since = [datetimeoffset]::Now.ToString('o'); UsedPercent = $Usage.UsedPercent
-        ResetsAtUnix = $Usage.ResetsAtUnix; Reason = $Reason })
+        ResetsAtUnix = $ResetsAtUnix; Reason = $Reason })
 }
 
 function Clear-CumPause { Remove-Item (Get-CumPath 'pause.json') -ErrorAction SilentlyContinue }
+
+# Nap test (Start-NapTest.ps1): a temporary, self-expiring override that lowers the stop
+# threshold and pretends the reset is a few seconds away, so the whole pause/resume cycle
+# can be exercised for real without waiting hours. The waiter removes it on resume.
+function Read-CumNapTest {
+    $path = Get-CumPath 'nap-test.json'
+    if (-not (Test-Path $path)) { return $null }
+    try { $t = Get-Content $path -Raw | ConvertFrom-Json } catch { return $null }
+    if ([datetimeoffset]::Parse($t.ExpiresAt) -le [datetimeoffset]::Now) { return $null }
+    $t
+}
+
+function Clear-CumNapTest { Remove-Item (Get-CumPath 'nap-test.json') -ErrorAction SilentlyContinue }
 
 #endregion
 #region main entry points
@@ -418,7 +431,7 @@ function Test-CumExemptTool {
             $ck = (Get-CumPath 'checkpoints') -replace '/', '\'
             return $p.StartsWith($ck, [StringComparison]::OrdinalIgnoreCase)
         }
-        '^(Bash|PowerShell)$' { return "$($ti.command)" -match '(Wait-ClaudeReset|Check-ClaudeUsage)\.ps1' }
+        '^(Bash|PowerShell)$' { return "$($ti.command)" -match '(Wait-ClaudeReset|Check-ClaudeUsage|Start-NapTest)\.ps1' }
     }
     $false
 }
@@ -457,6 +470,14 @@ function Get-CumGateDecision {
     if (-not $Config.Enabled) { return $null }
     if (Test-CumExemptTool $HookInput) { return $null }
 
+    $test = Read-CumNapTest
+    if ($test) {
+        $Config = $Config.PSObject.Copy()
+        $Config.StopThresholdPercent = [double]$test.ThresholdPercent
+        $Config.DryRun = $false
+        $Config.PredictiveStop = $false
+    }
+
     $pause = Read-CumPause
     if ($pause -and -not $Config.DryRun) {
         $at = [datetimeoffset]::FromUnixTimeSeconds([long]$pause.ResetsAtUnix).ToLocalTime().ToString('HH:mm:ss zzz')
@@ -481,7 +502,12 @@ function Get-CumGateDecision {
             }
             return $null
         }
-        $when = $u.ResetsAtLocal.ToString('yyyy-MM-dd HH:mm:ss zzz')
+        $resetUnix = $u.ResetsAtUnix
+        if ($test) {
+            $resetUnix = [datetimeoffset]::Now.AddSeconds([int]$test.FakeResetSeconds).ToUnixTimeSeconds()
+            $why = "[NAP TEST] $why"
+        }
+        $when = [datetimeoffset]::FromUnixTimeSeconds($resetUnix).ToLocalTime().ToString('yyyy-MM-dd HH:mm:ss zzz')
         if ($Config.DryRun) {
             if (-not (Test-Path (Get-CumPath "dryrun-notified-$($u.ResetsAtUnix)"))) {
                 New-Item (Get-CumPath "dryrun-notified-$($u.ResetsAtUnix)") -Force | Out-Null
@@ -491,7 +517,7 @@ function Get-CumGateDecision {
             return @{ systemMessage = "[claude-nap DRY RUN] would pause now: $why Reset $when." }
         }
         if (-not (Read-CumPause)) {
-            Set-CumPause $u $why
+            Set-CumPause $u $why $resetUnix
             Write-CumLog "PAUSE $why reset $when"
             Send-CumNotification 'Claude usage threshold reached' "$why Paused until $when." $Config
         }
@@ -509,9 +535,10 @@ function Get-CumGateDecision {
 #endregion
 #region display
 
-function Format-CumDuration([Nullable[timespan]]$t) {
+function Format-CumDuration($t) {
     if ($null -eq $t) { return 'UNKNOWN' }
-    '{0}h {1:00}m {2:00}s' -f [int][math]::Floor($t.Value.TotalHours), $t.Value.Minutes, $t.Value.Seconds
+    $t = [timespan]$t
+    '{0}h {1:00}m {2:00}s' -f [int][math]::Floor($t.TotalHours), $t.Minutes, $t.Seconds
 }
 
 function Show-ClaudeUsage {
@@ -538,6 +565,6 @@ function Show-ClaudeUsage {
 
 Export-ModuleMember -Function Get-CumConfig, Get-CumStateDir, Get-CumPath, Test-CumStopFile, Write-CumLog,
     Send-CumNotification, ConvertFrom-CumProbeOutput, Resolve-CumUsage, Read-CumReading, Read-CumHistory,
-    Get-CumBurnRate, Get-CumPollInterval, Read-CumPause, Set-CumPause, Clear-CumPause, Get-ClaudeUsage,
+    Get-CumBurnRate, Get-CumPollInterval, Read-CumPause, Set-CumPause, Clear-CumPause, Read-CumNapTest, Clear-CumNapTest, Get-ClaudeUsage,
     Get-CumGateUsage, Get-CumGateDecision, Test-CumExemptTool, Get-CumCheckpointPath, Format-CumDuration,
     Show-ClaudeUsage

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0 - 2026-10-20
+
+- `Start-NapTest.ps1`: run a real pause/resume cycle in about 2 minutes (temporary threshold =
+  current usage, fake reset). Verified end to end in the VS Code extension on a Team plan.
+- Demo GIF built from that run's real output.
+- Fix: `Time to reset` printed as `0h m s`.
+- Tests: 56 cases.
+
 ## 0.1.0 - 2026-10-20
 
 First release.
