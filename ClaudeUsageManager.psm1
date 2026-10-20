@@ -46,9 +46,12 @@ $script:Defaults = [ordered]@{
 function Get-CumConfig {
     param([string]$Path = $(if ($env:CUM_CONFIG) { $env:CUM_CONFIG } else { Join-Path $script:Root 'config.json' }))
     $cfg = [ordered]@{} + $script:Defaults
-    if (Test-Path $Path) {
-        $file = Get-Content $Path -Raw | ConvertFrom-Json
-        foreach ($p in $file.PSObject.Properties) { $cfg[$p.Name] = $p.Value }
+    # config.json holds the shipped defaults; config.local.json (git-ignored) holds your overrides.
+    $local = Join-Path (Split-Path $Path) 'config.local.json'
+    foreach ($file in $Path, $local) {
+        if (-not (Test-Path $file)) { continue }
+        $json = Get-Content $file -Raw | ConvertFrom-Json
+        foreach ($p in $json.PSObject.Properties) { $cfg[$p.Name] = $p.Value }
     }
     [pscustomobject]$cfg
 }

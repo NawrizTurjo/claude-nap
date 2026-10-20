@@ -53,13 +53,14 @@ if (-not (Test-Path $skillLink)) {
 }
 
 if ($Enforce) {
-    $cfgPath = Join-Path $root 'config.json'
-    $cfg = Get-Content $cfgPath -Raw | ConvertFrom-Json
-    $cfg.DryRun = $false
-    $cfg | ConvertTo-Json -Depth 5 | Set-Content $cfgPath -Encoding utf8
-    Write-Host 'DryRun disabled: the gate will now block tool calls at the threshold.' -ForegroundColor Yellow
+    # Personal overrides go to the git-ignored config.local.json, never the shipped config.json.
+    $localPath = Join-Path $root 'config.local.json'
+    $local = if (Test-Path $localPath) { Get-Content $localPath -Raw | ConvertFrom-Json -AsHashtable } else { [ordered]@{} }
+    $local.DryRun = $false
+    $local | ConvertTo-Json -Depth 5 | Set-Content $localPath -Encoding utf8
+    Write-Host "DryRun disabled in $localPath : the gate will now block tool calls at the threshold." -ForegroundColor Yellow
 } else {
-    Write-Host 'DryRun is on (config.json): the gate only warns. Re-run with -Enforce to block for real.'
+    Write-Host 'DryRun is on: the gate only warns. Re-run with -Enforce to block for real.'
 }
 
 Write-Host "`nFirst usage check:"

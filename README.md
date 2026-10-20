@@ -129,7 +129,7 @@ Claude Code sessions afterwards.
 When the dry-run warnings look right, turn on enforcement:
 
 ```powershell
-pwsh -File .\Install.ps1 -Enforce     # sets "DryRun": false in config.json
+pwsh -File .\Install.ps1 -Enforce     # writes "DryRun": false to config.local.json
 ```
 
 ## Try it in 2 minutes
@@ -197,6 +197,9 @@ Remove-Item .\state\STOP       # back to normal
 - To resume work by hand during a pause, delete `state\pause.json`.
 
 ## Configuration (`config.json`)
+
+Shipped defaults live in `config.json`. Put your own overrides in `config.local.json`, which is
+git-ignored and takes precedence, for example `{ "StopThresholdPercent": 95 }`.
 
 | Key | Default | Meaning |
 |---|---|---|

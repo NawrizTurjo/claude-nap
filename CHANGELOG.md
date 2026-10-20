@@ -6,6 +6,8 @@
   current usage, fake reset). Verified end to end in the VS Code extension on a Team plan.
 - Demo GIF built from that run's real output.
 - Fix: `Time to reset` printed as `0h m s`.
+- Personal overrides go in git-ignored `config.local.json`; `Install.ps1 -Enforce` writes there.
+- Social preview card: `docs/social-preview.png`.
 - Tests: 56 cases.
 
 ## 0.1.0 - 2026-10-20
