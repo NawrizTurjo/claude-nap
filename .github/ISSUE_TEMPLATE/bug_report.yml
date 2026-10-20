@@ -1,0 +1,33 @@
+name: Bug report
+description: Something didn't pause, didn't resume, or misbehaved.
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "**Never paste tokens, `~/.claude/.credentials.json`, or API keys.**"
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: OS, `pwsh --version`, `claude --version`, claude-nap version (Releases tag or commit), plan
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Output of `Check-ClaudeUsage.ps1 -Json` and the last lines of `state/events.log`. Remove anything private.
+      render: text

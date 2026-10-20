@@ -1,0 +1,60 @@
+name: Platform test report
+description: Tried claude-nap on your machine? Tell us what worked and what didn't.
+title: "[test] <OS> - <works / partly / broken>"
+labels: ["test-report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing! Steps are in [CONTRIBUTING.md](https://github.com/NawrizTurjo/claude-nap/blob/main/CONTRIBUTING.md#test-on-your-platform-about-10-minutes).
+        **Never paste tokens, `~/.claude/.credentials.json`, or API keys.**
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options: [macOS, Linux, Windows, WSL]
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: OS version, `pwsh --version`, `claude --version`
+      placeholder: "macOS 15.1 (Apple Silicon), PowerShell 7.6.0, Claude Code 2.1.304"
+    validations:
+      required: true
+  - type: dropdown
+    id: plan
+    attributes:
+      label: Claude plan
+      options: [Pro, Max, Team, Enterprise, Other]
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where did you run Claude Code?
+      options: [CLI (terminal), VS Code extension, JetBrains plugin, Other]
+  - type: checkboxes
+    id: results
+    attributes:
+      label: Results
+      description: Tick what worked.
+      options:
+        - label: Installer finished without errors
+        - label: "`tests/Test-UsageCheck.ps1` and `tests/Test-Manager.ps1` all passed"
+        - label: "`Check-ClaudeUsage.ps1` percentage and reset time match claude.ai/settings/usage"
+        - label: "Nap test: Claude's tool call was denied with a [claude-nap] message"
+        - label: Claude wrote a checkpoint and started the waiter in the background
+        - label: The session woke up by itself and resumed after the waiter printed RESUME
+        - label: A desktop notification appeared
+  - type: textarea
+    id: output
+    attributes:
+      label: Output and logs
+      description: Command output, test summary, last lines of `state/events.log`. Remove anything private.
+      render: text
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else?

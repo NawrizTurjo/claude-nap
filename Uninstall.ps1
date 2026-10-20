@@ -3,8 +3,8 @@
 # the skill link, and clears any pause. The tool folder itself is left in place.
 $ErrorActionPreference = 'Stop'
 $root      = $PSScriptRoot
-$settings  = Join-Path $HOME '.claude\settings.json'
-$skillLink = Join-Path $HOME '.claude\skills\claude-nap'
+$settings  = Join-Path $HOME '.claude' 'settings.json'
+$skillLink = Join-Path $HOME '.claude' 'skills' 'claude-nap'
 
 if (Test-Path $settings) {
     $json = Get-Content $settings -Raw | ConvertFrom-Json -AsHashtable
@@ -18,8 +18,8 @@ if (Test-Path $settings) {
     }
 }
 if (Test-Path $skillLink) {
-    [IO.Directory]::Delete($skillLink)   # deletes the junction only, never the target
+    (Get-Item $skillLink -Force).Delete()   # deletes the link only, never the target
     Write-Host "Removed skill link $skillLink"
 }
-Remove-Item (Join-Path $root 'state\pause.json') -ErrorAction SilentlyContinue
+Remove-Item (Join-Path $root 'state' 'pause.json') -ErrorAction SilentlyContinue
 Write-Host "Done. To delete the tool itself: Remove-Item '$root' -Recurse -Force"

@@ -80,6 +80,17 @@ function Write-CumJsonAtomic([string]$Path, $Object) {
 function Send-CumNotification([string]$Title, [string]$Body, $Config) {
     Write-CumLog "NOTIFY $Title - $Body"
     if (-not $Config.Notifications -or $env:CUM_NO_TOAST) { return }
+    try {
+        if ($IsMacOS) {
+            $q = { param($s) '"' + ($s -replace '\\', '\\' -replace '"', '\"') + '"' }
+            Start-Process osascript -ArgumentList '-e', "display notification $(& $q $Body) with title $(& $q $Title)"
+            return
+        }
+        if ($IsLinux) {
+            if (Get-Command notify-send -ErrorAction SilentlyContinue) { Start-Process notify-send -ArgumentList $Title, $Body }
+            return
+        }
+    } catch { Write-CumLog "notification failed: $($_.Exception.Message)"; return }
     $esc = { param($s) [Security.SecurityElement]::Escape($s) }
     # Toasts need the WinRT projection, which only Windows PowerShell 5.1 has.
     $ps = @"

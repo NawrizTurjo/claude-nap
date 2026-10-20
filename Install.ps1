@@ -13,14 +13,15 @@ param([switch]$Enforce)
 $ErrorActionPreference = 'Stop'
 
 $root     = $PSScriptRoot
-$gate     = Join-Path $root 'hooks\UsageGate.ps1'
+$gate     = Join-Path $root 'hooks' 'UsageGate.ps1'
 $pwsh     = (Get-Process -Id $PID).Path
 $claudeDir = Join-Path $HOME '.claude'
 $settings = Join-Path $claudeDir 'settings.json'
-$skillLink = Join-Path $claudeDir 'skills\claude-nap'
+$skillLink = Join-Path $claudeDir 'skills' 'claude-nap'
 
 if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {
-    throw 'claude CLI not found on PATH. Install it first: irm https://claude.ai/install.ps1 | iex'
+    $hint = if ($IsWindows) { 'irm https://claude.ai/install.ps1 | iex' } else { 'curl -fsSL https://claude.ai/install.sh | bash' }
+    throw "claude CLI not found on PATH. Install it first: $hint"
 }
 
 # settings.json: back up, drop any previous gate entry, add the current one.
@@ -30,6 +31,7 @@ if (Test-Path $settings) {
     Copy-Item $settings $backup
     Write-Host "Backed up settings.json -> $backup"
 }
+New-Item -ItemType Directory -Force $claudeDir | Out-Null   # fresh machines may not have it yet
 if (-not $json.ContainsKey('hooks')) { $json.hooks = [ordered]@{} }
 $pre = @($json.hooks.PreToolUse | Where-Object { $_ -and -not (($_ | ConvertTo-Json -Depth 10) -match 'UsageGate\.ps1') })
 $pre += [ordered]@{
@@ -45,10 +47,11 @@ $json.hooks.PreToolUse = $pre
 $json | ConvertTo-Json -Depth 20 | Set-Content $settings -Encoding utf8
 Write-Host "Added PreToolUse usage gate to $settings"
 
-# Skill link (a junction needs no admin rights).
+# Skill link.
 if (-not (Test-Path $skillLink)) {
     New-Item -ItemType Directory -Force (Split-Path $skillLink) | Out-Null
-    New-Item -ItemType Junction -Path $skillLink -Target $root | Out-Null
+    $linkType = if ($IsWindows) { 'Junction' } else { 'SymbolicLink' }   # a junction needs no admin rights
+    New-Item -ItemType $linkType -Path $skillLink -Target $root | Out-Null
     Write-Host "Linked skill: $skillLink -> $root"
 }
 

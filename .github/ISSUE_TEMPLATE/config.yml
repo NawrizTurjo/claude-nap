@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: How to test on Linux / macOS
+    url: https://github.com/NawrizTurjo/claude-nap/blob/main/CONTRIBUTING.md#test-on-your-platform-about-10-minutes
+    about: Step-by-step guide for a 10-minute test report.

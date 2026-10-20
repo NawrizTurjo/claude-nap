@@ -3,17 +3,23 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/platform-Windows-0078D6" alt="platform: Windows">
+  <img src="https://img.shields.io/badge/Windows-verified-0078D6" alt="Windows: verified"> <img src="https://img.shields.io/badge/Linux%20%7C%20macOS-experimental-orange" alt="Linux and macOS: experimental">
   <img src="https://img.shields.io/badge/PowerShell-7%2B-5391FE" alt="PowerShell 7+">
   <img src="https://img.shields.io/badge/Claude%20Code-2.1.234%2B-D97757" alt="Claude Code 2.1.234+">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license: MIT"></a>
   <a href="https://github.com/NawrizTurjo/claude-nap/releases/latest"><img src="https://img.shields.io/github/v/release/NawrizTurjo/claude-nap" alt="latest release"></a>
 </p>
 
-**Install in one line** (PowerShell):
+**Install in one line.** Windows (PowerShell):
 
 ```powershell
 irm https://raw.githubusercontent.com/NawrizTurjo/claude-nap/main/setup.ps1 | iex
+```
+
+Linux / macOS (experimental, needs PowerShell 7):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/NawrizTurjo/claude-nap/main/setup.sh | bash
 ```
 
 ## See it work
@@ -37,7 +43,27 @@ same task automatically after the reset, with no manual check-ins.
 - Never reads your OAuth token, never calls undocumented web endpoints, and never switches you to API
   billing. Usage it can't verify is reported as `UNKNOWN`, never guessed.
 
-> Windows + PowerShell 7 only, for now. Not affiliated with Anthropic.
+## Platform status
+
+| Platform | Status | What has been verified |
+|---|---|---|
+| **Windows 10/11** | ✅ Verified | Full live pause → wait → resume cycle in the VS Code extension on a Team plan (the GIF above), plus 56 simulated tests |
+| **Linux** | 🧪 Experimental | 56/56 simulated tests, install, hook, enforce and uninstall on Ubuntu 24.04 (WSL). **Not yet verified:** a live probe and a real resume on a signed-in account |
+| **macOS** | 🧪 Experimental | Same code path as Linux (PowerShell 7), with `osascript` notifications. **Not tested on a Mac yet** |
+
+### Linux and macOS testers wanted
+
+I don't have a Mac or a native Linux desktop, so the fastest way to make claude-nap solid
+everywhere is a 5-minute test report from you:
+
+1. Install with `curl -fsSL https://raw.githubusercontent.com/NawrizTurjo/claude-nap/main/setup.sh | bash`
+2. Run `pwsh -File ~/.local/share/claude-nap/Check-ClaudeUsage.ps1`. Does the percentage match claude.ai/settings/usage?
+3. Run `pwsh -File ~/.local/share/claude-nap/Start-NapTest.ps1`, ask Claude for a small task, and watch whether it pauses and resumes.
+4. Open a **[test report](https://github.com/NawrizTurjo/claude-nap/issues/new?template=test_report.yml)**. It works, it breaks, or something in between: all of these help.
+
+No code needed. Never paste tokens or `~/.claude/.credentials.json` into an issue. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+> Not affiliated with Anthropic.
 
 ---
 
@@ -108,10 +134,11 @@ so only one of them probes at a time.
 
 ## Requirements
 
-- Windows 10/11, [PowerShell 7](https://learn.microsoft.com/powershell/scripting/install/installing-powershell-on-windows) (`pwsh`)
+- Windows 10/11 (verified), or Linux / macOS (experimental), with [PowerShell 7](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) (`pwsh`)
 - Claude Code CLI on `PATH`, signed in with a **claude.ai subscription** (not an API key):
   ```powershell
-  irm https://claude.ai/install.ps1 | iex
+  irm https://claude.ai/install.ps1 | iex          # Windows
+  curl -fsSL https://claude.ai/install.sh | bash   # Linux / macOS
   claude          # then /login with your Claude account, /status to confirm
   ```
 - `ANTHROPIC_API_KEY` must **not** be set. The probe refuses to run if it is, because the
@@ -119,10 +146,16 @@ so only one of them probes at a time.
 
 ## Install
 
-One line, in PowerShell:
+One line. Windows (PowerShell):
 
 ```powershell
 irm https://raw.githubusercontent.com/NawrizTurjo/claude-nap/main/setup.ps1 | iex
+```
+
+Linux / macOS (experimental). Installs to `~/.local/share/claude-nap`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/NawrizTurjo/claude-nap/main/setup.sh | bash
 ```
 
 This downloads the latest release to `%LOCALAPPDATA%\claude-nap` and installs it in
@@ -284,7 +317,9 @@ pwsh -File .\tests\Test-Manager.ps1      # gate, polling, burst, nap test, waite
 ```
 
 The tests use fixture probes (`CUM_FIXTURE_DIR`), an isolated state directory
-(`CUM_STATE_DIR`) and config (`CUM_CONFIG`). They make no Claude calls and send no toasts.
+(`CUM_STATE_DIR`) and config (`CUM_CONFIG`). They make no Claude calls and send no toasts, and they run the same on Windows and Linux.
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

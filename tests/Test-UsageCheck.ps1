@@ -1,6 +1,6 @@
 #Requires -Version 7.0
 # Simulated tests for the usage-check logic. No network, no claude calls.
-Import-Module (Join-Path $PSScriptRoot '..\ClaudeUsageManager.psm1') -Force
+Import-Module (Join-Path $PSScriptRoot '../ClaudeUsageManager.psm1') -Force
 
 $now    = [datetimeoffset]::new(2026, 10, 20, 18, 0, 0, [timespan]::FromHours(6))
 $config = Get-CumConfig

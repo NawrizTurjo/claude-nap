@@ -95,5 +95,6 @@ from the checkpoint the same way.
 ## Setup
 
 Installation, testing, configuration and removal for people are in `README.md` next to
-this file. Requires Windows, PowerShell 7 and the `claude` CLI on PATH, signed in with a
-claude.ai subscription (not an API key).
+this file. Requires PowerShell 7 (Windows verified; Linux and macOS experimental) and the
+`claude` CLI on PATH, signed in with a claude.ai subscription (not an API key). The script
+paths above use `\`; on Linux and macOS use `/`.

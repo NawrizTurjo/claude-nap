@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 - 2026-10-20
+
+- Experimental **Linux and macOS** support: the same PowerShell 7 scripts, `setup.sh` one-liner,
+  `~/.local/share/claude-nap`, symlinked skill, `notify-send` / `osascript` notifications.
+  All 56 tests pass on Ubuntu 24.04 (WSL); live use on Linux/macOS is not verified yet.
+- Fix: `Install.ps1` failed on a fresh machine without `~/.claude`.
+- `CONTRIBUTING.md`, issue forms for platform test reports and bugs.
+
 ## 0.2.1 - 2026-10-20
 
 - One-line install/update: `irm https://raw.githubusercontent.com/NawrizTurjo/claude-nap/main/setup.ps1 | iex`.

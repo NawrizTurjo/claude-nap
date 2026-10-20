@@ -7,13 +7,15 @@
 
     & ([scriptblock]::Create((irm https://raw.githubusercontent.com/NawrizTurjo/claude-nap/main/setup.ps1))) -Enforce
 
-  Downloads the latest release into %LOCALAPPDATA%\claude-nap (keeping config.local.json
+  Linux/macOS (experimental): curl -fsSL https://raw.githubusercontent.com/NawrizTurjo/claude-nap/main/setup.sh | bash
+
+  Downloads the latest release into %LOCALAPPDATA%\claude-nap or ~/.local/share/claude-nap (keeping config.local.json
   and state\ on updates), then runs Install.ps1 with PowerShell 7.
-  Runs from Windows PowerShell 5.1 or PowerShell 7.
+  Runs from Windows PowerShell 5.1 or PowerShell 7 (any OS).
 #>
 param(
     [switch]$Enforce,
-    [string]$InstallDir = (Join-Path $env:LOCALAPPDATA 'claude-nap'),
+    [string]$InstallDir,     # default: %LOCALAPPDATA%\claude-nap, or ~/.local/share/claude-nap
     [string]$Source,        # zip URL or local zip path; default: latest release
     [switch]$SkipSetup      # only download/extract (used by tests)
 )
@@ -22,18 +24,23 @@ $repo = 'NawrizTurjo/claude-nap'
 
 function Say($m, $c = 'Cyan') { Write-Host "[claude-nap] $m" -ForegroundColor $c }
 
-if ($env:OS -ne 'Windows_NT') { throw 'claude-nap currently supports Windows only.' }
+$onWindows = $env:OS -eq 'Windows_NT'
+if (-not $InstallDir) {
+    $InstallDir = if ($onWindows) { Join-Path $env:LOCALAPPDATA 'claude-nap' }
+                  else { Join-Path $(if ($env:XDG_DATA_HOME) { $env:XDG_DATA_HOME } else { Join-Path $HOME '.local/share' }) 'claude-nap' }
+}
+if (-not $onWindows) { Say 'Linux/macOS support is experimental. Please report results: https://github.com/NawrizTurjo/claude-nap/issues' Yellow }
 
 $pwsh = Get-Command pwsh -ErrorAction SilentlyContinue
 if (-not $pwsh -and -not $SkipSetup) {
     Say 'PowerShell 7 (pwsh) is required. Install it with:' Yellow
-    Write-Host '  winget install --id Microsoft.PowerShell --source winget'
+    Write-Host $(if ($onWindows) { '  winget install --id Microsoft.PowerShell --source winget' } else { '  https://learn.microsoft.com/powershell/scripting/install/installing-powershell  (macOS: brew install --cask powershell)' })
     Write-Host 'then open a new terminal and run the install command again.'
     return
 }
 if (-not (Get-Command claude -ErrorAction SilentlyContinue) -and -not $SkipSetup) {
     Say 'The Claude Code CLI is required. Install it with:' Yellow
-    Write-Host '  irm https://claude.ai/install.ps1 | iex'
+    Write-Host $(if ($onWindows) { '  irm https://claude.ai/install.ps1 | iex' } else { '  curl -fsSL https://claude.ai/install.sh | bash' })
     Write-Host 'then sign in with your claude.ai account (claude, then /login) and run this again.'
     return
 }
