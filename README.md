@@ -1,14 +1,26 @@
-# claude-nap 💤
+<p align="center">
+  <img src="docs/social-preview.png" alt="claude-nap: Stop babysitting your Claude limit. Claude naps at 98%, sleeps through the reset, and picks up exactly where it left off." width="820">
+</p>
 
-**Stop babysitting your Claude limit.** Claude naps at 98%, sleeps through the reset, and
-picks up exactly where it left off.
+<p align="center">
+  <img src="https://img.shields.io/badge/platform-Windows-0078D6" alt="platform: Windows">
+  <img src="https://img.shields.io/badge/PowerShell-7%2B-5391FE" alt="PowerShell 7+">
+  <img src="https://img.shields.io/badge/Claude%20Code-2.1.234%2B-D97757" alt="Claude Code 2.1.234+">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license: MIT"></a>
+  <a href="https://github.com/NawrizTurjo/claude-nap/releases/latest"><img src="https://img.shields.io/github/v/release/NawrizTurjo/claude-nap" alt="latest release"></a>
+</p>
 
-![platform](https://img.shields.io/badge/platform-Windows-0078D6)
-![PowerShell](https://img.shields.io/badge/PowerShell-7%2B-5391FE)
-![Claude Code](https://img.shields.io/badge/Claude%20Code-2.1.234%2B-D97757)
-![license](https://img.shields.io/badge/license-MIT-green)
+**Install in one line** (PowerShell):
+
+```powershell
+irm https://raw.githubusercontent.com/NawrizTurjo/claude-nap/main/setup.ps1 | iex
+```
+
+## See it work
 
 ![claude-nap demo: gate pauses Claude, timer confirms the reset, session resumes](docs/demo.gif)
+
+## What it does
 
 Pause Claude Code before it runs into the claude.ai **5-hour usage limit**, then resume the
 same task automatically after the reset, with no manual check-ins.
@@ -24,10 +36,6 @@ same task automatically after the reset, with no manual check-ins.
   background commands. It should work on Pro and Max too.
 - Never reads your OAuth token, never calls undocumented web endpoints, and never switches you to API
   billing. Usage it can't verify is reported as `UNKNOWN`, never guessed.
-
-```powershell
-irm https://raw.githubusercontent.com/NawrizTurjo/claude-nap/main/setup.ps1 | iex
-```
 
 > Windows + PowerShell 7 only, for now. Not affiliated with Anthropic.
 
