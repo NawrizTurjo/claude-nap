@@ -5,7 +5,7 @@
 .DESCRIPTION
   - Backs up settings.json, then adds one PreToolUse hook (matcher "*") that runs
     hooks\UsageGate.ps1. Re-running replaces the old entry instead of duplicating it.
-  - Links this folder as ~/.claude/skills/claude-usage-manager.
+  - Links this folder as ~/.claude/skills/claude-nap.
   - Leaves DryRun as set in config.json; pass -Enforce to turn DryRun off.
   Applies to every Claude Code session on this machine (CLI and IDE extensions).
 #>
@@ -17,7 +17,7 @@ $gate     = Join-Path $root 'hooks\UsageGate.ps1'
 $pwsh     = (Get-Process -Id $PID).Path
 $claudeDir = Join-Path $HOME '.claude'
 $settings = Join-Path $claudeDir 'settings.json'
-$skillLink = Join-Path $claudeDir 'skills\claude-usage-manager'
+$skillLink = Join-Path $claudeDir 'skills\claude-nap'
 
 if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {
     throw 'claude CLI not found on PATH. Install it first: irm https://claude.ai/install.ps1 | iex'

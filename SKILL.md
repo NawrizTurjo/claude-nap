@@ -1,6 +1,6 @@
 ---
-name: claude-usage-manager
-description: Pause Claude Code work before the claude.ai 5-hour usage limit and resume the same task automatically after the reset. Use when a tool call is denied with a "[claude-usage-manager]" message, when a background Wait-ClaudeReset.ps1 command finishes (its output starts with RESUME, STOPPED or GAVE UP), or when the user asks to check 5-hour usage, the reset time, or to install/test/uninstall the usage manager.
+name: claude-nap
+description: Pause Claude Code work before the claude.ai 5-hour usage limit and resume the same task automatically after the reset. Use when a tool call is denied with a "[claude-nap]" message, when a background Wait-ClaudeReset.ps1 command finishes (its output starts with RESUME, STOPPED or GAVE UP), or when the user asks to check 5-hour usage, the reset time, or to install/test/uninstall the usage manager.
 ---
 
 # Claude Usage Manager

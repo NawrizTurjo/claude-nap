@@ -433,12 +433,12 @@ function Get-CumCheckpointPath([string]$SessionId) {
 function Get-CumStopInstructions {
     param($HookInput, [string]$Why)
     if ($HookInput.agent_id) {
-        return "[claude-usage-manager] $Why You are a subagent: make no more tool calls. Return to your parent now with what you completed (with evidence) and what remains."
+        return "[claude-nap] $Why You are a subagent: make no more tool calls. Return to your parent now with what you completed (with evidence) and what remains."
     }
     $ck   = Get-CumCheckpointPath $HookInput.session_id
     $wait = Join-Path $script:Root 'Wait-ClaudeReset.ps1'
     @"
-[claude-usage-manager] $Why Do not start new work. Follow the claude-usage-manager skill:
+[claude-nap] $Why Do not start new work. Follow the claude-nap skill:
 1. Write a checkpoint to $ck : the task exactly as the user authorized it, completed items with evidence, the in-progress item and its exact state, remaining items, constraints.
 2. Start this as a BACKGROUND shell command (run_in_background): pwsh -NoProfile -File "$wait" -Checkpoint "$ck"
 3. End your turn with one line saying work is paused until the reset. The waiter's exit will wake you; then follow its output.
@@ -452,7 +452,7 @@ function Get-CumGateDecision {
     $deny = { param($reason) @{ hookSpecificOutput = @{ hookEventName = 'PreToolUse'; permissionDecision = 'deny'; permissionDecisionReason = $reason } } }
 
     if (Test-CumStopFile) {
-        return & $deny "[claude-usage-manager] STOP file present ($(Get-CumPath 'STOP')). The user requested an immediate halt: make no more tool calls, summarize where you stopped, and end your turn."
+        return & $deny "[claude-nap] STOP file present ($(Get-CumPath 'STOP')). The user requested an immediate halt: make no more tool calls, summarize where you stopped, and end your turn."
     }
     if (-not $Config.Enabled) { return $null }
     if (Test-CumExemptTool $HookInput) { return $null }
@@ -475,8 +475,8 @@ function Get-CumGateDecision {
         if (-not $why) {
             # Near the limit, block new subagent fan-out: parallel agents can jump 90% -> 100% in seconds.
             if ($HookInput.tool_name -in $Config.HeavyTools -and $u.UsedPercent -ge $Config.HeavyToolsBlockPercent) {
-                $msg = "[claude-usage-manager] 5-hour usage is $($u.UsedPercent)% (>= $($Config.HeavyToolsBlockPercent)%): not spawning new subagents/workflows near the limit. Continue the work yourself in this conversation, in small steps."
-                if ($Config.DryRun) { return @{ systemMessage = "[claude-usage-manager DRY RUN] would block $($HookInput.tool_name): usage $($u.UsedPercent)%." } }
+                $msg = "[claude-nap] 5-hour usage is $($u.UsedPercent)% (>= $($Config.HeavyToolsBlockPercent)%): not spawning new subagents/workflows near the limit. Continue the work yourself in this conversation, in small steps."
+                if ($Config.DryRun) { return @{ systemMessage = "[claude-nap DRY RUN] would block $($HookInput.tool_name): usage $($u.UsedPercent)%." } }
                 return & $deny $msg
             }
             return $null
@@ -488,7 +488,7 @@ function Get-CumGateDecision {
                 Send-CumNotification 'Claude usage threshold (dry run)' "$why Would pause until $when." $Config
             }
             Write-CumLog "DRYRUN would stop: $why"
-            return @{ systemMessage = "[claude-usage-manager DRY RUN] would pause now: $why Reset $when." }
+            return @{ systemMessage = "[claude-nap DRY RUN] would pause now: $why Reset $when." }
         }
         if (-not (Read-CumPause)) {
             Set-CumPause $u $why
@@ -501,7 +501,7 @@ function Get-CumGateDecision {
     # UNKNOWN: never guess. Block only if the last good reading was already near the threshold.
     Write-CumLog "UNKNOWN in gate: $($u.Problems -join '; ')"
     if (-not $Config.DryRun -and $g.LastGood -and $g.LastGood.Used -ge ($Config.StopThresholdPercent - $Config.UnknownBlockMarginPercent)) {
-        return & $deny "[claude-usage-manager] Usage cannot be verified right now ($($u.Problems -join '; ')) and the last good reading was $($g.LastGood.Used)%. Not starting this tool call; retry in a minute, and if this repeats, checkpoint and stop as the claude-usage-manager skill describes."
+        return & $deny "[claude-nap] Usage cannot be verified right now ($($u.Problems -join '; ')) and the last good reading was $($g.LastGood.Used)%. Not starting this tool call; retry in a minute, and if this repeats, checkpoint and stop as the claude-nap skill describes."
     }
     $null
 }

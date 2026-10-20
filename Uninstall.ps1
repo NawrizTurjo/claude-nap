@@ -4,7 +4,7 @@
 $ErrorActionPreference = 'Stop'
 $root      = $PSScriptRoot
 $settings  = Join-Path $HOME '.claude\settings.json'
-$skillLink = Join-Path $HOME '.claude\skills\claude-usage-manager'
+$skillLink = Join-Path $HOME '.claude\skills\claude-nap'
 
 if (Test-Path $settings) {
     $json = Get-Content $settings -Raw | ConvertFrom-Json -AsHashtable

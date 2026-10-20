@@ -1,4 +1,12 @@
-# claude-usage-manager
+# claude-nap 💤
+
+**Stop babysitting your Claude limit.** Claude naps at 98%, sleeps through the reset, and
+picks up exactly where it left off.
+
+![platform](https://img.shields.io/badge/platform-Windows-0078D6)
+![PowerShell](https://img.shields.io/badge/PowerShell-7%2B-5391FE)
+![Claude Code](https://img.shields.io/badge/Claude%20Code-2.1.234%2B-D97757)
+![license](https://img.shields.io/badge/license-MIT-green)
 
 Pause Claude Code before it runs into the claude.ai **5-hour usage limit**, then resume the
 same task automatically after the reset, with no manual check-ins.
@@ -97,8 +105,8 @@ so only one of them probes at a time.
 ## Install
 
 ```powershell
-git clone https://github.com/<owner>/claude-usage-manager.git
-cd claude-usage-manager
+git clone https://github.com/NawrizTurjo/claude-nap.git
+cd claude-nap
 
 # 1. Confirm the usage reading matches claude.ai/settings/usage
 pwsh -File .\Check-ClaudeUsage.ps1
@@ -112,7 +120,7 @@ pwsh -File .\Install.ps1
 ```
 
 `Install.ps1` backs up `~/.claude/settings.json`, then adds one `PreToolUse` hook. It also
-links this folder as the skill `~/.claude/skills/claude-usage-manager`. Restart open
+links this folder as the skill `~/.claude/skills/claude-nap`. Restart open
 Claude Code sessions afterwards.
 
 When the dry-run warnings look right, turn on enforcement:
@@ -195,7 +203,7 @@ Remove-Item .\state\STOP       # back to normal
 
 ```powershell
 pwsh -File .\Uninstall.ps1                     # removes the hook (with backup) and the skill link
-Remove-Item <path-to>\claude-usage-manager -Recurse -Force   # optional: delete the files
+Remove-Item <path-to>\claude-nap -Recurse -Force   # optional: delete the files
 ```
 
 ## Limits and caveats
